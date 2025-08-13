@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDN Geospatial Intelligence Platform</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: #0a0e1a;
+            color: #ffffff;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            background: radial-gradient(circle at 30% 20%, #1a2332 0%, #0a0e1a 50%, #000 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-content {
+            z-index: 10;
+            max-width: 800px;
+        }
+        
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff4444 0%, #ff8c00 50%, #00d4ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 30px;
+            line-height: 1.1;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: #a0aec0;
+            margin-bottom: 50px;
+            font-weight: 300;
+        }
+        
+        .crisis-alert {
+            background: rgba(255, 68, 68, 0.1);
+            border: 2px solid #ff4444;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 40px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .crisis-alert::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,68,68,0.1), transparent);
+            animation: sweep 3s infinite;
+        }
+        
+        .crisis-title {
+            color: #ff4444;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .crisis-title::before {
+            content: '⚠️';
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        .demo-theater {
+            background: #000;
+            border-radius: 30px;
+            padding: 50px;
+            margin: 80px 0;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .demo-theater::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #ff4444, #ff8c00, #00d4ff, #ff4444);
+            background-size: 200% 100%;
+            animation: shimmer 3s linear infinite;
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .demo-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #ff4444, #ff8c00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .data-flow-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 40px 0;
+            padding: 35px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .flow-stage {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            padding: 25px 15px;
+            border-radius: 15px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .flow-stage.active {
+            background: rgba(255, 140, 0, 0.12);
+            border: 2px solid rgba(255, 140, 0, 0.4);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(255, 140, 0, 0.15);
+        }
+        
+        .stage-icon {
+            font-size: 2.8rem;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+            transition: all 0.3s ease;
+        }
+        
+        .flow-stage:hover .stage-icon {
+            transform: scale(1.1);
+            filter: drop-shadow(0 6px 12px rgba(255,140,0,0.3));
+        }
+        
+        .stage-title {
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 5px;
+            font-family: 'Inter', 'SF Pro Display', sans-serif;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .stage-desc {
+            font-size: 0.8rem;
+            color: #718096;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+        
+        .stage-status {
+            font-size: 0.75rem;
+            color: #ff8c00;
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 1px;
+            font-family: 'Monaco', 'Consolas', monospace;
+        }
+        
+        .flow-arrow-right {
+            width: 50px;
+            height: 2px;
+            background: linear-gradient(90deg, #ff8c00, #ff4444);
+            position: relative;
+            margin: 0 20px;
+        }
+        
+        .flow-arrow-right::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: -4px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid #ff4444;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+        }
+        
+        .data-stream {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, #ff8c00, transparent);
+            animation: dataFlow 2s infinite;
+        }
+        
+        .storage-indicator {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #ff8c00;
+            border-radius: 4px;
+            margin: 10px auto;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .storage-indicator::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: rgba(255, 140, 0, 0.3);
+            animation: fillStorage 3s infinite;
+        }
+        
+        .scan-indicator {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #00d4ff;
+            border-radius: 50%;
+            margin: 10px auto;
+            position: relative;
+        }
+        
+        .scan-indicator::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 10px;
+            background: #00d4ff;
+            transform-origin: 1px 1px;
+            animation: scanRotate 2s linear infinite;
+        }
+        
+        .alert-indicator {
+            width: 20px;
+            height: 20px;
+            background: #ff4444;
+            border-radius: 50%;
+            margin: 10px auto;
+            animation: alertBlink 1s infinite;
+        }
+        
+        .intelligence-display {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .satellite-feed {
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .feed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .feed-header h3 {
+            color: #ff8c00;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+        
+        .feed-status {
+            color: #4ade80;
+            font-weight: 600;
+        }
+        
+        .satellite-view {
+            width: 100%;
+            height: 350px;
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a202c 100%);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+        }
+        
+        .globe-container {
+            width: 100%;
+            height: 350px;
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        .view-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .toggle-btn {
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            color: #00d4ff;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .toggle-btn.active {
+            background: rgba(0, 212, 255, 0.3);
+            border-color: #00d4ff;
+        }
+        
+        .toggle-btn:hover {
+            background: rgba(0, 212, 255, 0.4);
+        }
+        
+        .ai-visualization {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            display: none;
+        }
+        
+        .ai-visualization.active {
+            display: block;
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        .ai-title {
+            color: #ff8c00;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .neural-network {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .neural-layer {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .neural-node {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(0, 212, 255, 0.6);
+            position: relative;
+            animation: neuralPulse 2s infinite;
+        }
+        
+        .neural-node.active {
+            background: #ff8c00;
+            box-shadow: 0 0 10px rgba(255, 140, 0, 0.6);
+        }
+        
+        .neural-connection {
+            width: 40px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.4), transparent);
+            animation: dataFlow 1.5s infinite;
+        }
+        
+        .confidence-meter {
+            margin-top: 15px;
+        }
+        
+        .confidence-label {
+            font-size: 0.8rem;
+            color: #a0aec0;
+            margin-bottom: 5px;
+        }
+        
+        .confidence-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444, #ff8c00, #4ade80);
+            border-radius: 3px;
+            width: 0%;
+            animation: confidenceGrow 3s ease-out forwards;
+        }
+        
+        .threat-indicators {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 200px;
+            margin-left: -100px;
+            margin-top: -100px;
+            border: 2px solid rgba(255, 68, 68, 0.3);
+            border-radius: 50%;
+            animation: sonarSweep 3s linear infinite;
+            display: none;
+        }
+        
+        .threat-indicators.active {
+            display: block;
+        }
+        
+        .threat-indicators::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2px;
+            height: 80px;
+            background: #ff4444;
+            margin-left: -1px;
+            margin-top: -40px;
+            transform-origin: 1px 40px;
+            animation: radarSweep 3s linear infinite;
+        }
+        
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 10;
+        }
+        
+        .zoom-btn {
+            width: 35px;
+            height: 35px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            color: #00d4ff;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .zoom-btn:hover {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: #00d4ff;
+        }
+        
+        .satellite-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0,212,255,0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,212,255,0.15) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridScan 15s linear infinite;
+        }
+        
+        .coordinates {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: #00d4ff;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+        
+        .vessel-group {
+            position: absolute;
+            top: 45%;
+            left: 55%;
+            animation: vesselMovement 20s linear infinite;
+        }
+        
+        .vessel {
+            width: 25px;
+            height: 8px;
+            background: linear-gradient(45deg, #ff4444, #ff6b6b);
+            border-radius: 4px;
+            position: relative;
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
+        }
+        
+        .vessel::after {
+            content: 'UNKNOWN VESSEL';
+            position: absolute;
+            top: -35px;
+            left: -40px;
+            background: rgba(255, 68, 68, 0.9);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        
+        .detection-ring {
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            width: 65px;
+            height: 65px;
+            border: 3px solid #ff4444;
+            border-radius: 50%;
+            animation: sonarPulse 2s infinite;
+        }
+        
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+            animation: scanSweep 4s linear infinite;
+        }
+        
+        .data-ingestion-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        
+        .data-packet {
+            width: 8px;
+            height: 8px;
+            background: #ff8c00;
+            border-radius: 50%;
+            margin: 5px 0;
+            animation: packetFlow 1.5s infinite;
+        }
+        
+        .data-packet:nth-child(2) {
+            animation-delay: 0.5s;
+        }
+        
+        .data-packet:nth-child(3) {
+            animation-delay: 1s;
+        }
+        
+        .system-panel {
+            background: rgba(0,0,0,0.4);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .panel-header h3 {
+            color: #ff8c00;
+            font-size: 1.2rem;
+            margin: 0;
+        }
+        
+        .system-health {
+            color: #4ade80;
+            font-weight: 600;
+        }
+        
+        .system-metrics {
+            margin-bottom: 30px;
+        }
+        
+        .metric-item {
+            margin-bottom: 20px;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            color: #a0aec0;
+            margin-bottom: 5px;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+        
+        .metric-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .metric-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff8c00, #ff4444);
+            border-radius: 3px;
+            animation: fillBar 2s ease-out;
+        }
+        
+        .ddn-highlight-panel {
+            background: rgba(255, 140, 0, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .ddn-highlight-panel h4 {
+            color: #ff8c00;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        
+        .ddn-highlight-panel p {
+            color: #a0aec0;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        
+        .alert-dashboard {
+            background: rgba(0,0,0,0.6);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .alert-header h3 {
+            color: #00d4ff;
+            font-size: 1.4rem;
+            margin: 0;
+        }
+        
+        .pipeline-status {
+            color: #4ade80;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+        
+        .detection-log {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .log-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            animation: logEntryAppear 0.5s ease-out;
+        }
+        
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+        
+        .log-time {
+            color: #ff8c00;
+            font-weight: 600;
+            min-width: 80px;
+        }
+        
+        .log-message {
+            color: #ffffff;
+            flex: 1;
+            margin: 0 20px;
+        }
+        
+        .log-status {
+            color: #4ade80;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+        
+        .log-status.processing {
+            color: #ff8c00;
+        }
+        
+        .threat-analysis {
+            background: rgba(255, 68, 68, 0.1);
+            border: 2px solid #ff4444;
+            border-radius: 15px;
+            padding: 25px;
+            animation: threatAlert 0.5s ease-out;
+        }
+        
+        .analysis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .analysis-header h4 {
+            color: #ff4444;
+            font-size: 1.3rem;
+            margin: 0;
+        }
+        
+        .threat-level {
+            background: #ff4444;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+        
+        .threat-details {
+            margin: 20px 0;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,68,68,0.2);
+        }
+        
+        .detail-item span:first-child {
+            color: #a0aec0;
+            font-weight: 600;
+        }
+        
+        .detail-item span:last-child {
+            color: #ffffff;
+        }
+        
+        .recommended-actions {
+            margin: 20px 0;
+        }
+        
+        .recommended-actions h5 {
+            color: #ff8c00;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .action-item {
+            background: rgba(255, 140, 0, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin: 8px 0;
+            color: #ffffff;
+            font-weight: 500;
+        }
+        
+        .processing-time {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .processing-time strong {
+            color: #00d4ff;
+            font-size: 1.1rem;
+        }
+        
+        .processing-time span {
+            color: #a0aec0;
+            font-size: 0.9rem;
+            display: block;
+            margin-top: 5px;
+        }
+        
+        .ddn-highlight {
+            color: #ff8c00;
+            font-weight: 700;
+            background: rgba(255, 140, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .impact-section {
+            padding: 100px 0;
+            background: radial-gradient(circle at 70% 30%, #1a2332 0%, #0a0e1a 70%);
+            text-align: center;
+        }
+        
+        .section-title {
+            font-size: 3rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, #a0aec0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #718096;
+            margin-bottom: 80px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .impact-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 50px;
+            margin: 80px 0;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px;
+            padding: 40px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
+        }
+        
+        .stat-number {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ff4444, #ff8c00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            color: #a0aec0;
+            font-weight: 500;
+        }
+        
+        .cta-section {
+            background: linear-gradient(135deg, rgba(255, 68, 68, 0.1), rgba(255, 140, 0, 0.1));
+            padding: 80px 0;
+            text-align: center;
+            border-radius: 30px;
+            margin: 80px 0;
+            border: 1px solid rgba(255, 140, 0, 0.2);
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 20px 50px;
+            background: linear-gradient(135deg, #ff4444, #ff8c00);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 15px 35px rgba(255, 140, 0, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(255, 140, 0, 0.5);
+        }
+        
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .floating-dot {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(0, 212, 255, 0.4);
+            border-radius: 50%;
+            animation: floatUp 25s linear infinite;
+        }
+        
+        @keyframes sweep {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        @keyframes dataFlow {
+            0%, 100% { opacity: 0; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(10px); }
+        }
+        
+        @keyframes fillStorage {
+            0% { height: 0%; }
+            100% { height: 80%; }
+        }
+        
+        @keyframes scanRotate {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        @keyframes alertBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        @keyframes packetFlow {
+            0% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.5) translateY(20px); }
+        }
+        
+        @keyframes logEntryAppear {
+            0% { opacity: 0; transform: translateX(-20px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes threatAlert {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes gridScan {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(40px, 40px); }
+        }
+        
+        @keyframes vesselMovement {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-100px, -50px) rotate(-15deg); }
+            50% { transform: translate(-50px, -100px) rotate(30deg); }
+            75% { transform: translate(50px, -75px) rotate(-45deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        
+        @keyframes sonarPulse {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        
+        @keyframes scanSweep {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(350px); }
+        }
+        
+        @keyframes fillBar {
+            0% { width: 0%; }
+            100% { width: var(--width); }
+        }
+        
+        @keyframes neuralPulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        @keyframes confidenceGrow {
+            0% { width: 0%; }
+            100% { width: 94%; }
+        }
+        
+        @keyframes sonarSweep {
+            0% { transform: scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: scale(1.5) rotate(360deg); opacity: 0; }
+        }
+        
+        @keyframes radarSweep {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes slideUp {
+            0% { transform: translateY(20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes cameraZoom {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .demo-theater.threat-detected {
+            animation: cameraZoom 2s ease-in-out;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2.5rem; }
+            .intelligence-display { grid-template-columns: 1fr; }
+            .data-flow-container { 
+                flex-direction: column; 
+                gap: 15px; 
+                padding: 25px;
+            }
+            .flow-arrow-right { 
+                display: none; 
+            }
+            .flow-stage {
+                min-height: 120px;
+                width: 100%;
+                max-width: 280px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-elements" id="floatingElements"></div>
+    
+    <div class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">National Security Intelligence<br>Accelerated by DDN</h1>
+                <p class="hero-subtitle">Transform massive geospatial datasets into actionable intelligence in minutes, not hours</p>
+                
+                <div class="crisis-alert">
+                    <div class="crisis-title">SCENARIO: Maritime Threat Detection</div>
+                    <p>An unidentified vessel has entered restricted waters near critical infrastructure. Traditional analysis would take 4-6 hours per analyst, potentially allowing threats to escalate. With DDN's accelerated infrastructure, the same comprehensive analysis completes in <strong style="color: #ff8c00;">few minutes</strong> with ~95% plus accuracy.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="demo-theater">
+            <div class="demo-header">
+                <h2 class="demo-title">Live Intelligence Operations Center</h2>
+                <p style="color: #a0aec0; font-size: 1.1rem;">Watch DDN accelerate real-time threat detection and response</p>
+            </div>
+            
+            <!-- Data Flow Visualization -->
+            <div class="data-flow-container">
+                <div class="flow-stage" id="stage1">
+                    <div class="stage-icon">🌍</div>
+                    <div class="stage-title">Satellite Imagery APIs</div>
+                    <div class="stage-desc">Planet Labs, Maxar, Sentinel</div>
+                    <div class="stage-status">STREAMING</div>
+                    <div class="data-stream"></div>
+                </div>
+                
+                <div class="flow-arrow-right"></div>
+                
+                <div class="flow-stage" id="stage2">
+                    <div class="stage-icon">🗄️</div>
+                    <div class="stage-title">DDN Persistent Storage</div>
+                    <div class="stage-desc">High-res imagery ingestion</div>
+                    <div class="stage-status">INGESTING</div>
+                    <div class="storage-indicator"></div>
+                </div>
+                
+                <div class="flow-arrow-right"></div>
+                
+                <div class="flow-stage" id="stage3">
+                    <div class="stage-icon">👁️</div>
+                    <div class="stage-title">Computer Vision Pipeline</div>
+                    <div class="stage-desc">Object detection & classification</div>
+                    <div class="stage-status">PROCESSING</div>
+                    <div class="scan-indicator"></div>
+                </div>
+                
+                <div class="flow-arrow-right"></div>
+                
+                <div class="flow-stage" id="stage4">
+                    <div class="stage-icon">🧠</div>
+                    <div class="stage-title">AI Threat Analysis</div>
+                    <div class="stage-desc">Pattern & behavior analysis</div>
+                    <div class="stage-status">ANALYZING</div>
+                    <div class="alert-indicator"></div>
+                </div>
+                
+                <div class="flow-arrow-right"></div>
+                
+                <div class="flow-stage" id="stage5">
+                    <div class="stage-icon">🚨</div>
+                    <div class="stage-title">Alert & Response</div>
+                    <div class="stage-desc">Multi-agency notifications</div>
+                    <div class="stage-status">STANDBY</div>
+                    <div class="alert-indicator"></div>
+                </div>
+            </div>
+            
+            <!-- Main Display -->
+            <div class="intelligence-display">
+                <!-- Satellite Feed -->
+                <div class="satellite-feed">
+                    <div class="feed-header">
+                        <h3>SATELLITE FEED - SECTOR 7</h3>
+                        <div class="feed-status">🟢 LIVE</div>
+                    </div>
+                    <div class="satellite-view">
+                        <div class="view-toggle">
+                            <div class="toggle-btn active" onclick="switchView('satellite')">2D View</div>
+                            <div class="toggle-btn" onclick="switchView('globe')">3D Globe</div>
+                        </div>
+                        
+                        <div id="satelliteView">
+                            <div class="satellite-grid"></div>
+                            <div class="scan-line"></div>
+                            
+                            <div class="coordinates">
+                                <div>LAT: 34.0522°N</div>
+                                <div>LON: 118.2437°W</div>
+                                <div>ZOOM: 15x</div>
+                                <div>SOURCE: SAT-7</div>
+                            </div>
+                            
+                            <div class="vessel-group" id="targetVessel">
+                                <div class="vessel"></div>
+                                <div class="detection-ring"></div>
+                            </div>
+                            
+                            <div class="data-ingestion-indicator">
+                                <div class="data-packet"></div>
+                                <div class="data-packet"></div>
+                                <div class="data-packet"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="globeView" class="globe-container" style="display: none;">
+                            <!-- 3D Globe will be rendered here -->
+                        </div>
+                        
+                        <div class="threat-indicators" id="threatIndicators">
+                        </div>
+                        
+                        <div class="zoom-controls">
+                            <div class="zoom-btn" onclick="zoomIn()">+</div>
+                            <div class="zoom-btn" onclick="zoomOut()">-</div>
+                        </div>
+                        
+                        <div class="ai-visualization" id="aiVisualization">
+                            <div class="ai-title">
+                                AI Pattern Recognition Active
+                            </div>
+                            <div class="neural-network">
+                                <div class="neural-layer">
+                                    <div class="neural-node"></div>
+                                    <div class="neural-node"></div>
+                                    <div class="neural-node"></div>
+                                </div>
+                                <div class="neural-connection"></div>
+                                <div class="neural-layer">
+                                    <div class="neural-node"></div>
+                                    <div class="neural-node"></div>
+                                </div>
+                                <div class="neural-connection"></div>
+                                <div class="neural-layer">
+                                    <div class="neural-node"></div>
+                                </div>
+                            </div>
+                            <div class="confidence-meter">
+                                <div class="confidence-label">Threat Classification Confidence</div>
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- System Status Panel -->
+                <div class="system-panel">
+                    <div class="panel-header">
+                        <h3>DDN SYSTEM STATUS</h3>
+                        <div class="system-health">🟢 OPTIMAL</div>
+                    </div>
+                    
+                    <div class="system-metrics">
+                        <div class="metric-item">
+                            <div class="metric-label">Data Ingestion Rate</div>
+                            <div class="metric-value" id="ingestionRate">47.3 GB/s</div>
+                            <div class="metric-bar">
+                                <div class="metric-fill" style="--width: 85%; width: 85%;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-item">
+                            <div class="metric-label">Storage Utilization</div>
+                            <div class="metric-value" id="storageUtil">23.7 TB</div>
+                            <div class="metric-bar">
+                                <div class="metric-fill" style="--width: 65%; width: 65%;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-item">
+                            <div class="metric-label">AI Processing Load</div>
+                            <div class="metric-value" id="aiLoad">89%</div>
+                            <div class="metric-bar">
+                                <div class="metric-fill" style="--width: 89%; width: 89%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ddn-highlight-panel">
+                        <h4>DDN Acceleration Active</h4>
+                        <p>Parallel I/O delivering 10x faster processing than traditional storage</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alert Dashboard -->
+            <div class="alert-dashboard" id="alertDashboard">
+                <div class="alert-header">
+                    <h3>THREAT DETECTION PIPELINE</h3>
+                    <div class="pipeline-status">MONITORING</div>
+                </div>
+                
+                <div class="detection-log">
+                    <div class="log-entry" id="log1">
+                        <div class="log-time">14:23:45</div>
+                        <div class="log-message">Satellite data received - Sector 7</div>
+                        <div class="log-status">INFO</div>
+                    </div>
+                    <div class="log-entry" id="log2">
+                        <div class="log-time">14:23:47</div>
+                        <div class="log-message">Data stored in DDN EXAScale - 2.3 GB</div>
+                        <div class="log-status">SUCCESS</div>
+                    </div>
+                    <div class="log-entry" id="log3">
+                        <div class="log-time">14:23:49</div>
+                        <div class="log-message">AI analysis initiated on new dataset</div>
+                        <div class="log-status">PROCESSING</div>
+                    </div>
+                </div>
+                
+                <div class="threat-analysis" id="threatAnalysis" style="display: none;">
+                    <div class="analysis-header">
+                        <h4>🚨 THREAT DETECTED</h4>
+                        <div class="threat-level">HIGH PRIORITY</div>
+                    </div>
+                    <div class="threat-details">
+                        <div class="detail-item">
+                            <span>Vessel Type:</span>
+                            <span>Unknown Military Craft</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>Classification Confidence:</span>
+                            <span>94.7%</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>Behavioral Analysis:</span>
+                            <span>Suspicious Pattern</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>Risk Score:</span>
+                            <span>8.7/10</span>
+                        </div>
+                    </div>
+                    
+                    <div class="recommended-actions">
+                        <h5>Recommended Actions:</h5>
+                        <div class="action-item"> Alert Naval Command</div>
+                        <div class="action-item"> Increase Surveillance</div>
+                        <div class="action-item"> Generate Intelligence Report</div>
+                    </div>
+                    
+                    <div class="processing-time">
+                        <strong>Total Processing Time: few minutes</strong>
+                        <span>(Traditional: 4-6 hours)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="impact-section">
+        <div class="container">
+            <h2 class="section-title">Mission-Critical Impact</h2>
+            <p class="section-subtitle">Real performance metrics from DDN-powered intelligence operations</p>
+            
+            <div class="impact-stats">
+                <div class="stat-card">
+                    <div class="stat-number">10x</div>
+                    <div class="stat-label">Faster Data Processing</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-number">85%</div>
+                    <div class="stat-label">Analyst Workload Reduction</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-number">99.999%</div>
+                    <div class="stat-label">Mission Uptime Guarantee</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-number">40%</div>
+                    <div class="stat-label">Lower Total Cost of Ownership</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="cta-section">
+            <h2 style="margin-bottom: 30px; font-size: 2.5rem;">Ready to Accelerate National Security?</h2>
+            <p style="font-size: 1.3rem; margin-bottom: 50px; color: #a0aec0;">Join defense agencies worldwide who rely on DDN for mission-critical intelligence operations</p>
+            <a href="#" class="cta-button" onclick="scheduleDemo()">Schedule Private Demo</a>
+        </div>
+    </div>
+    
+    <script>
+        let globe, renderer, camera, scene;
+        let currentView = 'satellite';
+        let zoomLevel = 15;
+        
+        function createFloatingElements() {
+            const container = document.getElementById('floatingElements');
+            
+            for (let i = 0; i < 30; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'floating-dot';
+                dot.style.left = Math.random() * 100 + '%';
+                dot.style.animationDelay = Math.random() * 25 + 's';
+                dot.style.animationDuration = (Math.random() * 10 + 20) + 's';
+                container.appendChild(dot);
+            }
+        }
+        
+        function init3DGlobe() {
+            const container = document.getElementById('globeView');
+            
+            // Scene setup
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, container.offsetWidth / container.offsetHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(container.offsetWidth, container.offsetHeight);
+            renderer.setClearColor(0x000000, 1);
+            container.appendChild(renderer.domElement);
+            
+            // Create Earth
+            const geometry = new THREE.SphereGeometry(5, 32, 32);
+            const textureLoader = new THREE.TextureLoader();
+            
+            // Create a simple earth-like material
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x2194ce,
+                shininess: 0.5
+            });
+            
+            globe = new THREE.Mesh(geometry, material);
+            scene.add(globe);
+            
+            // Add atmosphere
+            const atmosphereGeometry = new THREE.SphereGeometry(5.2, 32, 32);
+            const atmosphereMaterial = new THREE.MeshPhongMaterial({
+                color: 0x00d4ff,
+                transparent: true,
+                opacity: 0.1
+            });
+            const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+            scene.add(atmosphere);
+            
+            // Add satellites
+            createSatellites();
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+            scene.add(ambientLight);
+            
+            const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+            pointLight.position.set(10, 10, 10);
+            scene.add(pointLight);
+            
+            // Position camera
+            camera.position.z = 12;
+            
+            // Start animation
+            animate3D();
+        }
+        
+        function createSatellites() {
+            const satelliteGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.2);
+            const satelliteMaterial = new THREE.MeshPhongMaterial({ color: 0xff8c00 });
+            
+            for (let i = 0; i < 6; i++) {
+                const satellite = new THREE.Mesh(satelliteGeometry, satelliteMaterial);
+                const radius = 7 + Math.random() * 2;
+                const angle = (i / 6) * Math.PI * 2;
+                
+                satellite.position.x = Math.cos(angle) * radius;
+                satellite.position.y = Math.sin(angle) * radius;
+                satellite.position.z = (Math.random() - 0.5) * 4;
+                
+                satellite.userData = { 
+                    angle: angle,
+                    radius: radius,
+                    speed: 0.01 + Math.random() * 0.01
+                };
+                
+                scene.add(satellite);
+            }
+        }
+        
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+            
+            if (globe) {
+                globe.rotation.y += 0.005;
+                
+                // Animate satellites
+                scene.children.forEach(child => {
+                    if (child.userData && child.userData.angle !== undefined) {
+                        child.userData.angle += child.userData.speed;
+                        child.position.x = Math.cos(child.userData.angle) * child.userData.radius;
+                        child.position.y = Math.sin(child.userData.angle) * child.userData.radius;
+                    }
+                });
+                
+                renderer.render(scene, camera);
+            }
+        }
+        
+        function switchView(view) {
+            const satelliteView = document.getElementById('satelliteView');
+            const globeView = document.getElementById('globeView');
+            const toggleBtns = document.querySelectorAll('.toggle-btn');
+            
+            toggleBtns.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (view === 'globe') {
+                satelliteView.style.display = 'none';
+                globeView.style.display = 'block';
+                currentView = 'globe';
+                
+                if (!renderer) {
+                    setTimeout(() => {
+                        init3DGlobe();
+                    }, 100);
+                }
+            } else {
+                satelliteView.style.display = 'block';
+                globeView.style.display = 'none';
+                currentView = 'satellite';
+            }
+        }
+        
+        function zoomIn() {
+            if (currentView === 'satellite') {
+                zoomLevel = Math.min(25, zoomLevel + 2);
+                updateZoomDisplay();
+            } else if (camera) {
+                camera.position.z = Math.max(8, camera.position.z - 1);
+            }
+        }
+        
+        function zoomOut() {
+            if (currentView === 'satellite') {
+                zoomLevel = Math.max(5, zoomLevel - 2);
+                updateZoomDisplay();
+            } else if (camera) {
+                camera.position.z = Math.min(20, camera.position.z + 1);
+            }
+        }
+        
+        function updateZoomDisplay() {
+            const coordinates = document.querySelector('.coordinates');
+            if (coordinates) {
+                const lat = (34.0522 + (Math.random() - 0.5) * 0.01).toFixed(4);
+                const lon = (-118.2437 + (Math.random() - 0.5) * 0.01).toFixed(4);
+                coordinates.innerHTML = `
+                    <div>LAT: ${lat}°N</div>
+                    <div>LON: ${lon}°W</div>
+                    <div>ZOOM: ${zoomLevel}x</div>
+                    <div>SOURCE: SAT-7</div>
+                `;
+            }
+        }
+        
+        function activateAIVisualization() {
+            const aiViz = document.getElementById('aiVisualization');
+            const threatIndicators = document.getElementById('threatIndicators');
+            
+            aiViz.classList.add('active');
+            threatIndicators.classList.add('active');
+            
+            // Activate neural nodes sequentially
+            const nodes = document.querySelectorAll('.neural-node');
+            nodes.forEach((node, index) => {
+                setTimeout(() => {
+                    node.classList.add('active');
+                }, index * 300);
+            });
+        }
+        
+        function deactivateAIVisualization() {
+            const aiViz = document.getElementById('aiVisualization');
+            const threatIndicators = document.getElementById('threatIndicators');
+            const nodes = document.querySelectorAll('.neural-node');
+            
+            aiViz.classList.remove('active');
+            threatIndicators.classList.remove('active');
+            nodes.forEach(node => node.classList.remove('active'));
+        }
+        
+        function addDynamicCameraEffect() {
+            const demoTheater = document.querySelector('.demo-theater');
+            demoTheater.classList.add('threat-detected');
+            
+            setTimeout(() => {
+                demoTheater.classList.remove('threat-detected');
+            }, 2000);
+        }
+        
+        function startIntelligenceWorkflow() {
+            let step = 0;
+            const steps = [
+                { stage: 'stage1', status: 'STREAMING', duration: 2500 },
+                { stage: 'stage2', status: 'PROCESSING', duration: 2000 },
+                { stage: 'stage3', status: 'INGESTING', duration: 2500 },
+                { stage: 'stage4', status: 'ANALYZING', duration: 3500 },
+                { stage: 'stage5', status: 'ALERT', duration: 4000 } // Increased from 2000ms to 4000ms
+            ];
+            
+            function runWorkflowStep() {
+                // Reset all stages
+                document.querySelectorAll('.flow-stage').forEach(stage => {
+                    stage.classList.remove('active');
+                    const statusElement = stage.querySelector('.stage-status');
+                    if (statusElement) {
+                        statusElement.textContent = 'STANDBY';
+                    }
+                });
+                
+                if (step < steps.length) {
+                    const currentStep = steps[step];
+                    const stageElement = document.getElementById(currentStep.stage);
+                    
+                    if (stageElement) {
+                        stageElement.classList.add('active');
+                        const statusElement = stageElement.querySelector('.stage-status');
+                        if (statusElement) {
+                            statusElement.textContent = currentStep.status;
+                        }
+                    }
+                    
+                    // Add specific workflow actions
+                    switch(step) {
+                        case 0:
+                            addLogEntry('14:23:45', 'High-res imagery from Planet Labs API received', 'INFO');
+                            updateMetrics();
+                            break;
+                        case 1:
+                            addLogEntry('14:23:47', 'Images stored in DDN EXAScale - 847 MB batch', 'SUCCESS');
+                            simulateStorageActivity();
+                            break;
+                        case 2:
+                            addLogEntry('14:23:49', 'Computer vision models processing imagery', 'PROCESSING');
+                            setTimeout(() => {
+                                addLogEntry('14:23:51', 'Object detection: 12 vessels identified', 'INFO');
+                            }, 1000);
+                            break;
+                        case 3:
+                            addLogEntry('14:23:53', 'AI analyzing vessel behavior patterns', 'PROCESSING');
+                            activateAIVisualization();
+                            setTimeout(() => {
+                                addLogEntry('14:23:56', 'ANOMALY: Unknown vessel in restricted zone', 'WARNING');
+                            }, 1500);
+                            break;
+                        case 4:
+                            addLogEntry('14:23:58', 'THREAT CONFIRMED - Multi-agency alert issued', 'ALERT');
+                            addDynamicCameraEffect();
+                            setTimeout(() => {
+                                showThreatAnalysis();
+                            }, 1000);
+                            break;
+                    }
+                    
+                    setTimeout(() => {
+                        step++;
+                        if (step >= steps.length) {
+                            // Reset and restart the workflow - extended time to view threat analysis
+                            setTimeout(() => {
+                                step = 0;
+                                clearLogs();
+                                hideThreatAnalysis();
+                                runWorkflowStep();
+                            }, 15000); // Increased from 8000ms to 15000ms (15 seconds)
+                        } else {
+                            runWorkflowStep();
+                        }
+                    }, currentStep.duration);
+                }
+            }
+            
+            runWorkflowStep();
+        }
+        
+        function addLogEntry(time, message, status) {
+            const logContainer = document.querySelector('.detection-log');
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            
+            const statusClass = status.toLowerCase() === 'processing' ? 'processing' : '';
+            const statusColor = status === 'ALERT' ? '#ff4444' : 
+                               status === 'WARNING' ? '#ff8c00' : 
+                               status === 'SUCCESS' ? '#4ade80' : '#00d4ff';
+            
+            logEntry.innerHTML = `
+                <div class="log-time">${time}</div>
+                <div class="log-message">${message}</div>
+                <div class="log-status ${statusClass}" style="color: ${statusColor}">${status}</div>
+            `;
+            
+            logContainer.appendChild(logEntry);
+            
+            // Remove old entries if more than 5
+            const entries = logContainer.querySelectorAll('.log-entry');
+            if (entries.length > 5) {
+                entries[0].remove();
+            }
+            
+            // Scroll to bottom
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function clearLogs() {
+            const logContainer = document.querySelector('.detection-log');
+            logContainer.innerHTML = '';
+        }
+        
+        function showThreatAnalysis() {
+            const threatAnalysis = document.getElementById('threatAnalysis');
+            threatAnalysis.style.display = 'block';
+        }
+        
+        function hideThreatAnalysis() {
+            const threatAnalysis = document.getElementById('threatAnalysis');
+            threatAnalysis.style.display = 'none';
+            deactivateAIVisualization(); // Deactivate AI visualization when hiding threat analysis
+        }
+        
+        function updateMetrics() {
+            // Simulate real-time metric updates
+            const metrics = [
+                { id: 'ingestionRate', values: ['47.3 GB/s', '52.1 GB/s', '48.7 GB/s'] },
+                { id: 'storageUtil', values: ['23.7 TB', '23.9 TB', '24.1 TB'] },
+                { id: 'aiLoad', values: ['89%', '92%', '87%'] }
+            ];
+            
+            metrics.forEach(metric => {
+                const element = document.getElementById(metric.id);
+                if (element) {
+                    const randomValue = metric.values[Math.floor(Math.random() * metric.values.length)];
+                    element.textContent = randomValue;
+                }
+            });
+        }
+        
+        function simulateStorageActivity() {
+            const storageIndicators = document.querySelectorAll('.storage-indicator');
+            storageIndicators.forEach(indicator => {
+                indicator.style.animation = 'none';
+                setTimeout(() => {
+                    indicator.style.animation = 'fillStorage 2s ease-out';
+                }, 50);
+            });
+        }
+        
+        function enhancePipelineCards() {
+            const cards = document.querySelectorAll('.flow-stage');
+            
+            cards.forEach((card, index) => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.zIndex = '10';
+                    card.style.transform = 'scale(1.05)';
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.zIndex = '1';
+                    card.style.transform = 'scale(1)';
+                });
+            });
+        }
+        
+        function scheduleDemo() {
+            // Create modal-like effect
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.background = 'rgba(0,0,0,0.8)';
+            modal.style.zIndex = '1000';
+            modal.style.display = 'flex';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            modal.style.backdropFilter = 'blur(10px)';
+            
+            const content = document.createElement('div');
+            content.style.background = 'linear-gradient(135deg, #1a2332, #0a0e1a)';
+            content.style.padding = '40px';
+            content.style.borderRadius = '20px';
+            content.style.border = '2px solid rgba(255,140,0,0.3)';
+            content.style.textAlign = 'center';
+            content.style.color = 'white';
+            content.style.maxWidth = '500px';
+            content.innerHTML = `
+                <h3 style="color: #ff8c00; margin-bottom: 20px; font-size: 1.8rem;">🚀 Demo Request Submitted</h3>
+                <p style="margin-bottom: 30px; line-height: 1.6;">Thank you for your interest in DDN's geospatial intelligence capabilities. Our team will contact you within 24 hours to schedule your private demonstration.</p>
+                <button onclick="this.parentElement.parentElement.remove()" style="background: linear-gradient(135deg, #ff4444, #ff8c00); color: white; border: none; padding: 15px 30px; border-radius: 25px; font-weight: bold; cursor: pointer; transition: all 0.3s ease;">Close</button>
+            `;
+            
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            // Add entrance animation
+            modal.style.opacity = '0';
+            modal.style.transform = 'scale(0.8)';
+            setTimeout(() => {
+                modal.style.transition = 'all 0.3s ease';
+                modal.style.opacity = '1';
+                modal.style.transform = 'scale(1)';
+            }, 10);
+        }
+        
+        function addScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe stat cards
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'all 0.8s ease-out';
+                observer.observe(card);
+            });
+        }
+        
+        function addParallaxEffect() {
+            window.addEventListener('scroll', () => {
+                const scrolled = window.pageYOffset;
+                const parallaxElements = document.querySelectorAll('.floating-elements');
+                
+                parallaxElements.forEach(element => {
+                    const speed = 0.5;
+                    element.style.transform = `translateY(${scrolled * speed}px)`;
+                });
+            });
+        }
+        
+        // Initialize everything when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            createFloatingElements();
+            startIntelligenceWorkflow();
+            enhancePipelineCards();
+            addScrollAnimations();
+            addParallaxEffect();
+        });
+        
+        // Add real-time updates to coordinates
+        setInterval(() => {
+            updateZoomDisplay();
+        }, 3000);
+        
+        // Update metrics periodically
+        setInterval(() => {
+            updateMetrics();
+        }, 4000);
+        
+        // Handle window resize for 3D globe
+        window.addEventListener('resize', () => {
+            if (renderer && camera) {
+                const container = document.getElementById('globeView');
+                camera.aspect = container.offsetWidth / container.offsetHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.offsetWidth, container.offsetHeight);
+            }
+        });
+    </script>
+</body>
+</html>
